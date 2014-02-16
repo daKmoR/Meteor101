@@ -1,0 +1,15 @@
+<template name="root">
+	<textarea class="new-item" placeholder="new Item"></textarea>
+	<label>
+		<input type="checkbox" class="new-item-private" />
+		private
+	</label>
+	<h1>Items:</h1>
+	{{#each items}}
+		<p><strong>{{name}}</strong> <small>[{{_id}}]</small><button class="remove-item">remove</button></p>
+	{{/each}}
+
+
+	<br /><br /><br /><br /> <hr />
+	<pre>Meteor.subscribe('items-all');</pre>
+</template>
