@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Meteor 101 - Getting Started & Common Pitfalls</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Thomas Allmer">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section>
+					<h1>Meteor 101</h1>
+					<h3>Getting Started & Common Pitfalls</h3>
+					<p>
+						<small>My personal experience with Meteor</small>
+					</p>
+					<p>
+						<small>Created by <a href="http://hakim.se">Thomas Allmer</a> / <a href="http://twitter.com/daKmoR">@daKmoR</a></small>
+					</p>
+				</section>
+				
+				<section>
+					<h2>Disclamer</h2>
+					<p>I'm coming from the classical Client/Server World</p>
+					<p>php, mysql, with js only on the client</p>
+					<p>This is just my personal experience with Meteor</p> 
+					<p>I don't have any online projects - it's just me playing around :p</p>
+				</section>
+
+				<section>
+					<h2>Index</h2>
+					<ol>
+						<li><a href="#/3">Metoer vs Classical Client/Server</a></li>
+						<li><a href="#/4">Simple Example Application</a></li>
+						<li><a href="#/5">Publish & Subscribe where lives the DATA?</a></li>
+						<li><a href="#/9">autopublish explained</a></li>
+						<li><a href="#/11">insecure explained</a></li>
+						<li><a href="#/13">Example Application+</a></li>
+						<li><a href="#/14">use of reactive "Sessions"</a></li>
+						<li><a href="#/15">Blaze new Redering Engine => Drag and Drop Example</a></li>
+						<li><a href="#/16">Useful Stuff</a></li>
+					</ol>
+				</section>
+				
+				<section>
+					<h2>Meteor vs Classical Client/Server</h2>
+					<ul>
+						<li class="fragment">Mostly NO CODE difference between Client/Server</li>
+						<li class="fragment">Client has always! almost ALL Code!!! (except server folder)</li>
+						<li class="fragment">CODE changes need a reload</li>
+						<li class="fragment">DATA is the big difference
+							<ul>
+								<li class="fragment">Server publishes DATA</li>
+								<li class="fragment">Client subscribes and caches DATA</li>
+								<li class="fragment">DATA changes do NOT need a reload</li>
+							</ul>
+						</li>
+					</ul>
+
+					<aside class="notes">
+						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+					</aside>
+				</section>
+
+				<section>
+					<h2>Simple Example Application</h2>
+					<p>Just some Items with a name rendered in a list</p>
+					<p><small>step1</small></p>
+				</section>
+				
+				<section>
+					<h2>Publish & Subscribe</h2>
+					<h3>where lives the DATA?</h3>
+					<p> 
+					<ul>
+						<li>Server
+							<ul>
+								<li>has ALL DATA</li>
+								<li>decides which to publish</li>
+								<li>syncs changes automatically to all clients</li>
+							</ul>
+						</li>
+						<li>Client
+							<ul>
+								<li>has his OWN Copy of the DATA available to him</li>
+								<li>accumulates this DATA and usually won't throw them away</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>Publish</h2>
+					<pre><code data-trim contenteditable>
+Meteor.publish('items-public', function () {
+	return Items.find({public: true});
+});
+					</code></pre>
+					<p>Publishes only Items which are marked public</p>
+					<p>Will be pushed to all subscribed Clients</p>
+				</section>
+				
+				<section>
+					<h2>Subscribe</h2>
+					<p>The Client has to subscribe to some published DATA and can then query this subset.</p>
+					<pre><code data-trim contenteditable>
+Meteor.subscribe('items-public');
+
+Template.root.items = function() {
+	return Items.find({});
+};
+					</code></pre>
+					<p>Will only return all DATA available to the Client</p>
+					<p>Will most likely return something different then if the same query would be executed on the Server</p>
+				</section>
+				
+				<section>
+					<h2>Publish & Subscribe</h2>
+					<h3>Demo</h3>
+					<p>If you subscribe to another published DATA set your current local cache might get updated and new things will be displayed.</p>
+					<p>Reactivity for the win! :)</p>
+
+					<p><small>step2</small></p>
+				</section>
+				
+				<section>
+					<h2>autopublish</h2>
+					<p>installed by default remove on the console with</p>
+					<pre><code data-trim contenteditable>
+$ meteor remove autopublish 
+					</code></pre>
+					<p>Basically published ALL DATA on the Server and subscribes to EVERYTHING on the client</p>
+				</section>				
+
+				<section>
+					<h2>autopublish</h2>
+					<p>executes something like this for EVERY Meteor Collection</p>
+					<pre><code data-trim contenteditable>
+// server js
+Meteor.publish('items-all', function () {
+	return Items.find({});
+});
+// client js
+Meteor.subscribe('items-all');
+					</code></pre>
+					<p>GREAT for prototyping, but no good for a real application</p>
+				</section>
+				
+				<section>
+					<h2>insecure</h2>
+					<p>installed by default remove on the console with</p>
+					<pre><code data-trim contenteditable>
+$ meteor remove insecure 
+					</code></pre>
+					<p>Basically allows ALL Database actions to be executed on the client as well.</p>
+				</section>					
+
+				<section>
+					<h2>insecure</h2>
+					<p>executes something like this for EVERY Meteor Collection</p>
+					<pre><code data-trim contenteditable>
+Items.allow({
+	insert: function() {
+		return true;
+	},
+	update: function() {
+		return true;
+	},
+	remove: function() {
+		return true;
+	}
+});
+					</code></pre>
+					<p>GREAT for prototyping, but no good for a real application</p>
+				</section>				
+
+				<section>
+					<h2>Example Application+</h2>
+					<h3>Demo</h3>
+					<ul>
+						<li>new Item Funktion with private setting</li>
+						<li>add create and modification date by default</li>
+						<li>order by create date</li>
+						<li>remove Item</li>
+					</ul>
+					<p><small>step3</small></p>
+				</section>
+				
+				<section>
+					<h2>use of reactive "Sessions"</h2>
+					<p>Session "Variables" are reactive, so every change will trigger a rerendering of every affected DATA</p>
+					<p>Reactivity for the win! :)</p>
+					<p>Can easily be used for subscribing to DATA, detail lightboxes, themes...</p>
+					<p><small>step4</small></p>
+				</section>
+				
+				<section>
+					<h2>"Blaze" - new Redering Engine</h2>
+					<blockquote cite="https://www.meteor.com/blog/2014/02/13/devshop-london-has-arrived">
+						"They say Meteor UI [AKA Blaze, the new Meteor rendering engine] is in preview, but it just works fine for us. It just works."
+					</blockquote>
+					<p>— Manuel Timita</p>
+					<p>Some sort of more complex Play Around Thingi</p>
+					<p>Generic jquery code can be used due to the new Engine</p>
+				</section>
+				
+				<section>
+					<h2>Usefull Stuff</h2>
+					<ul>
+						<li>Use Meteor on Windows: https://github.com/shoebappa/vagrant-meteor-windows</li>
+						<li>Excellent Tutorials: https://www.eventedmind.com</li>
+						<li>Unoffical FAQ: https://github.com/oortcloud/unofficial-meteor-faq</li>
+						<li>Book: https://www.discovermeteor.com/</li>
+					</ul>
+				</section>
+
+				<section>
+					<h1>THE END</h1>
+					<h2>THX</h2>
+					<h3>BY Thomas Allmer</h3>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: 'moon', // available themes are in /css/theme
+				transition: 'concave', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
